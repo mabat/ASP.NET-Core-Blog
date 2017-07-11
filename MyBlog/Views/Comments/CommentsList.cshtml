@@ -1,0 +1,45 @@
+﻿@model IEnumerable<MyBlog.Models.CommentViewModels.Comment>
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!--popis komentara odabranog usera-->
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="page-header">
+                <h4 style="color:gray">Svi komentari korisnika: @Html.Raw(Model.ElementAt(0).ApplicationUser.FirstName) @Html.Raw(Model.ElementAt(0).ApplicationUser.LastName)</h4>
+                <h1><small class="pull-right">@Model.Count() comment(s)</small> Comments </h1>
+            </div>
+            <div class="comments-list">
+                @foreach (var comment in Model)
+                {
+                    <div class="media">
+                        <p class="pull-right"><small>@Html.Raw(comment.PublishedDate)</small></p>
+                        <div class="media-body comment-body">
+
+                            <h4 class="media-heading user_name">@Html.Raw(comment.ApplicationUser.FirstName) @Html.Raw(comment.ApplicationUser.LastName)</h4>
+                            @Html.Raw(comment.Content)
+
+                            <p class="pull-right">
+                                <small>
+                                    @if (SignInManager.IsSignedIn(User) && UserManager.GetUserAsync(User).Result.Id.Equals(comment.ApplicationUserID))
+                                    {
+                                        <a asp-controller="Comments" asp-action="Edit" asp-route-id="@comment.CommentID">Edit |</a>
+                                        <a asp-controller="Comments" asp-action="Delete" asp-route-id="@comment.CommentID">Delete</a>
+                                    }
+                                </small>
+                            </p>
+                        </div>
+                        <div class="panel-footer">Post title: <a asp-controller="Posts" asp-action="Details" asp-route-id="@comment.PostID">@Html.Raw(comment.Post.Title)</a></div>
+                    </div>
+                    <br /><br />
+                }
+            </div>
+
+        </div>
+    </div>
+</div>
+<br /><br />
+<div>
+    <a asp-controller="Posts" asp-action="Index">Back to Post List</a>
+</div>

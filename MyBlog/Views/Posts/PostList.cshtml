@@ -1,0 +1,71 @@
+﻿@model IEnumerable<MyBlog.Models.PostViewModels.Post>
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "PostList";
+}
+
+<hr/>
+<div class="page-header">
+    <h4 style="color:gray">Svi postovi korisnika: @Html.Raw(Model.ElementAt(0).ApplicationUser.FirstName) @Html.Raw(Model.ElementAt(0).ApplicationUser.LastName)</h4>
+    <h1><small class="pull-right">@Model.Count() post(s)</small> Postovi </h1>
+</div>
+@foreach (var item in Model)
+{
+    <div class="post">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h2>@Html.DisplayFor(modelItem => item.Title)</h2>
+                    </div>
+                    <!--ako korisnik nije prijavljen moze samo pogledati Detail od posta,
+                     a ako je prijavljen moze brisati i editirati samo svoje postove-->
+                    @if (SignInManager.IsSignedIn(User) && User.Identity.Name == item.ApplicationUser.UserName)
+                    {
+                        <div class="col-md-4 margin-top">
+                            <a asp-action="Edit" asp-route-id="@item.PostID">Edit</a>
+                            <a asp-action="Details" asp-route-id="@item.PostID">Details</a>
+                            <a asp-action="Delete" asp-route-id="@item.PostID">Delete</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-4 margin-top">
+                            <a asp-action="Details" asp-route-id="@item.PostID">Details</a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <!--prikaz skracenog posta, samo prvih 250 znakova-->
+                @{
+                    string postIntro = item.Content.Substring(0, Math.Min(item.Content.Length, 250));
+                }
+                <p>@Html.Raw(postIntro) ...</p>
+
+                @if (item != null)
+                {
+                     <!--slike-->
+                    <div class="popup-gallery">
+                        @foreach (var image in item.Images)
+                        {
+                            <img src="@Url.Content(image.ImagePath)" height="50" data-darkbox="@Url.Content(image.ImagePath)" data-darkbox-description="Image Caption">
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="panel-footer">
+                <div class="date">
+                    <p>@Html.DisplayFor(modelItem => item.PublishedDate) created by: 
+                        <a asp-action="PostList" asp-route-id="@item.ApplicationUserID"> @Html.DisplayFor(modelItem => item.ApplicationUser.FirstName) @Html.DisplayFor(modelItem => item.ApplicationUser.LastName)</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>

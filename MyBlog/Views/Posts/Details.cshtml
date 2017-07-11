@@ -1,0 +1,146 @@
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
+@using MyBlog.Models.CommentViewModels
+@model MyBlog.Models.PostViewModels.Post
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<hr />
+
+
+@if (Model!= null)
+{
+
+    <!--cover slika - prva iz niza-->
+         @if (Model.Images.Count > 0)
+         {
+            <div class="intro-header" style="background-image: url('@Url.Content(Model.Images.First().ImagePath)">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                            <div class="site-heading">
+                                <hr class="small">
+                                <h1>@Html.DisplayFor(model => model.Title)</h1>
+                                <hr class="small">
+                                <!--<span class="subheading">Podnaslov</span>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+         }
+         else
+         {
+            <div class="intro-header">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                            <div class="site-heading">
+                                <hr class="small">
+                                <h1>@Html.DisplayFor(model => model.Title)</h1>
+                                <hr class="small">
+                                <!--<span class="subheading">Podnaslov</span>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+         }
+
+    <hr />
+    <!--ostale slike-->
+    <div class="popup-gallery img-responsive">
+        @foreach (var image in Model.Images)
+        {
+            <img src="@Url.Content(image.ImagePath)" height="70" data-darkbox="@Url.Content(image.ImagePath)" data-darkbox-description="Image Caption">
+        }
+    </div>
+    <hr />
+}
+<div class="post">
+    <div class="panel panel-default">
+
+        <div class="panel-bodydetails">
+            @Html.Raw(Model.Content) <!---mora biti Raw-->
+        </div>
+
+        <div class="panel-footer">
+            <div class="date">
+                <p>
+                    @Html.DisplayFor(model => model.PublishedDate) created by:
+                    <a asp-action="PostList" asp-route-id="@Model.ApplicationUserID"> @Html.DisplayFor(model => Model.ApplicationUser.FirstName) @Html.DisplayFor(model => Model.ApplicationUser.LastName)</a>
+                </p>
+            </div>
+        </div>
+        <!--komentari-->
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="page-header">
+                        <h1><small class="pull-right">@Model.Comments.Count comment(s)</small> Comments </h1>
+                    </div>
+                    <div class="comments-list">
+                        @foreach (var comment in Model.Comments)
+                        {
+
+
+                            <div class="media">
+                                <p class="pull-right"><small>@Html.Raw(comment.PublishedDate)</small></p>
+                                <div class="media-body">
+
+                                    <h4 class="media-heading user_name"><a asp-controller="Comments" asp-action="CommentsList" asp-route-id="@comment.ApplicationUserID">@Html.Raw(comment.ApplicationUser.FirstName) @Html.Raw(comment.ApplicationUser.LastName)</a></h4>
+                                    @Html.Raw(comment.Content)
+
+                                    <p class="pull-right">
+                                        <small>
+                                            @if (SignInManager.IsSignedIn(User) && UserManager.GetUserAsync(User).Result.Id.Equals(comment.ApplicationUserID))
+                                            {
+                                                <a asp-controller="Comments" asp-action="Edit" asp-route-id="@comment.CommentID">Edit |</a>
+                                                <a asp-controller="Comments" asp-action="Delete" asp-route-id="@comment.CommentID">Delete</a>
+                                            }
+                                        </small>
+                                    </p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <hr />
+        <!--upis komentara-->
+        <!--kreiramo novi objekt Comment kojem dodjelimo PostId, zatim taj objekt Comment prosljedjuejmo u PartialView Create.cshtml-->
+        @if (SignInManager.IsSignedIn(User))
+        {
+            Comment newComment = new Comment();
+            newComment.PostID = Model.PostID;
+
+            @await Html.PartialAsync("~/Views/Comments/Create.cshtml", newComment)
+        }
+        else
+        {
+            <p style="padding-left:10px;"><a asp-controller="Account" asp-action="Login">Log in</a> to comment or <a asp-controller="Account" asp-action="Register">Register</a></p>
+        }
+    </div>
+
+</div>
+<hr />
+@if (SignInManager.IsSignedIn(User) && UserManager.GetUserAsync(User).Result.Id.Equals(Model.ApplicationUser.Id))
+{
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.PostID">Edit</a> |
+        <a asp-action="Index">Back to List</a>
+    </div>
+}
+else
+{
+    <div>
+        <a asp-action="Index">Back to List</a>
+    </div>
+}
+

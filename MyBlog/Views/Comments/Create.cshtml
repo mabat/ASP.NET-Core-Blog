@@ -1,0 +1,28 @@
+<!--Iz /Posts/Details/ prosljedjuemo objekt Comment koji sadrzi PostID-->
+<!--Nakon sto upisemo Content, klikom na Create poziva se metoda Create() u CommentsControleru koja prima objekt Comment-->
+@model MyBlog.Models.CommentViewModels.Comment
+
+
+<form method="post" enctype="multipart/form-data" asp-controller="Comments" asp-action="Create">
+    <div class="form-horizontal">
+        <hr />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="PostID" />
+        <div class="form-group">
+            <label asp-for="Content" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <textarea asp-for="Content" class="form-control"></textarea>
+                <span asp-validation-for="Content" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
